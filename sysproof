@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# This script scans the system and records checksums for system files and directories.
+# In order to make 
+#
+DATE=`date +%Y%m%d%H%M`
+
+RECORDSFILEPATH="/tmp"
+RECORDSFILENAME="sysproof.log"
+RECORDSARCH="$HOME/sysproof-$DATE.tar.gz"
+RECORDSFILE="$RECORDSFILEPATH/$RECORDSFILENAME"
+
+# Common system directories
+SYSDIR="/bin /boot /etc /lib /lib64 /sbin /usr/bin /usr/include /usr/lib /usr/sbin /usr/share"
+
+# Uncomment the line below to use common system directories + directories used 
+# to commonly install extra user applications"
+#SYSDIR="/bin /boot /etc /lib /lib64 /sbin /usr/bin /usr/include /usr/lib /usr/sbin /usr/share /opt /srv /usr/local"
+
+for i in $SYSDIR; do
+	test -d $i || break
+	find $i -type f -exec md5sum {} + &>> $RECORDSFILE
+done
+
+md5sum $RECORDSFILE > $RECORDSFILE.md5
+cd $RECORDSFILEPATH
+tar -cvzf $RECORDSARCH $RECORDSFILENAME $RECORDSFILENAME.md5 &>/dev/null && \
+	rm -f $RECORDSFILENAME $RECORDSFILENAME.md5
+cd -

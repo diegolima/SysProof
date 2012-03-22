@@ -1,0 +1,29 @@
+#!/bin/bash
+
+TMPDIR="/tmp"
+test -z $1 && { echo "You must indicate the first sysproof archive" && exit 1 ; } 
+test -z $2 && { echo "You must indicate the second sysproof archive" && exit 1 ; } 
+
+ARCHA=$1
+ARCHB=$2
+
+
+RNDA=$RANDOM
+RNDB=$RANDOM
+
+CFILEA="$TMPDIR/sysproof-$RNDA/sysproof.log"
+CFILEB="$TMPDIR/sysproof-$RNDB/sysproof.log"
+
+mkdir -p $TMPDIR/sysproof-$RNDA $TMPDIR/sysproof-$RNDB
+tar -xvzf $ARCHA -C $TMPDIR/sysproof-$RNDA &>/dev/null
+tar -xvzf $ARCHB -C $TMPDIR/sysproof-$RNDB &>/dev/null
+
+FILES=`diff $CFILEA $CFILEB |grep ^\> |awk '{print $3}'`
+if [ "x$FILES" != "x" ]; then
+	echo "There were changes to the following files:"
+	for i in $FILES; do echo $i; done
+else
+	echo "No differences found"
+fi
+
+#rm -Rf $TMPDIR/sysproof-$RNDA $TMPDIR/sysproof-$RNDB
